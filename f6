@@ -1,0 +1,475 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- LogOUT new with cookie-->
+<html dir="rtl" lang="he-IL">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+<meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta name="robots" content="noindex,nofollow">
+<title>Reichman University - Logout</title>
+
+<link rel="shortcut icon" href="/public/share/images/Favicon_Whitout_RU_32x32.png" type="image/vnd.microsoft.icon" id="favicon">
+<link rel="stylesheet" type="text/css" href="/public/share/heb/css/MinCSS_RUNI.ashx">
+
+<script language="JavaScript" src="/public/include/js/session_check.js"></script>
+<script language="JavaScript"  src="/public/include/js/web_host.js"></script>
+        							
+												 
+														 
+
+    <script language="javascript">
+      function InsertActivexControl(clsid, params)
+      {
+          var container = document.getElementById("logoutActivexContainer");
+          
+          if (navigator.appName == "Microsoft Internet Explorer") {
+              var paramsCode = "";
+              for (var item in params) {
+                  paramsCode += "<param name='" + item + "' value='" + params[item] + "'>";
+              }
+              
+              container.innerHTML = 
+                  "<center><object classId=CLSID:" + clsid + " border=0 width=1 height=1>" +
+                  paramsCode + "</object></center>";
+          }
+          else {
+              var pluginHost = new UPluginHost("", container);
+              var control = {"clsid": clsid, "width": 1, "height": 1};
+              pluginHost.hostControl(control, params);
+          }
+      }
+      
+      function OnLoad()
+      {
+		//-------------------------------
+		var strlng=getCookie("ChoosedLng");
+		if (strlng == "") {
+		} else {
+			onSelectedChange(strlng,"fOnload");
+		}
+		//-------------------------------
+		var x = document.getElementById("container-wait");
+		var y = document.getElementById("container");
+			x.style.display = "none";
+			y.style.display = "block";
+		//------------------------------
+
+        var display_session = get_cookie("LastMRH_Session");
+        if(null != display_session) {
+          document.getElementById("sessionDIV").innerHTML = '<BR>The session reference number: &nbsp;' + display_session + '<BR><BR>';
+									   
+					   
+			
+									 
+  
+									 
+												   
+          document.getElementById("sessionDIV").style.visibility = "visible";
+						   
+							
+								  
+ 
+		
+													   
+												 
+        }
+				
+
+        try
+        {    
+          if (("undefined" != typeof(window.external))
+              && ("unknown" != typeof(window.external))
+              && ("undefined" != typeof(window.external.WebLogonNotifyUser))
+              && ("unknown" != typeof(window.external.WebLogonNotifyUser)))
+          {
+            window.external.WebLogonNotifyUser();
+          }
+        }
+        catch(e) {};
+        try
+        {
+            if (get_cookie("F5_PWS") == "1")
+            {
+                document.cookie = "F5_PWS=0; path=/; expires=Fri, 01-Jan-1970 00:00:01 GMT";
+                var pwsClassId = "7E73BE8F-FD87-44EC-8E22-023D5FF960FF";
+                InsertActivexControl(pwsClassId, {"command": "exit"} );
+            }
+        }catch (e) {};		
+      }
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires=" + d.toUTCString();
+	var domain = ";domain=.idc.ac.il"
+	//var domain = ""
+    document.cookie = cname + "=" + cvalue + ";" + expires + domain + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+		   
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+		   
+function eraseCookie(cname,path,domain) {
+											
+  if (getCookie(cname)) {
+    document.cookie = cname + "=" +
+    ((path) ? "; path=" + path : "") +
+    ((domain) ? "; domain=" + domain : "") +
+    "; expires=Thu, 01-Jan-70 00:00:01 GMT";
+  }
+}
+
+function load_js(strlng,f) {
+   if (f=="fButton"){
+		var strlng=getCookie("ChoosedLng");
+		if (strlng == "") {
+			setCookie("ChoosedLng", "Eng", 30);
+			strlng = "";
+		} else {
+			eraseCookie("ChoosedLng","/",".idc.ac.il");
+			strlng = "hl=he&";
+		}
+    } else {
+		if (strlng == "") {
+			strlng = "hl=he&";
+		} else {
+			setCookie("ChoosedLng", "Eng", 30);
+			strlng = "";
+		}
+	}
+	
+    //-------------------------------
+	var x = document.getElementById("container-wait");
+	var y = document.getElementById("container");
+		x.style.display = "none";
+		y.style.display = "block";
+	//-------------------------------
+}
+							 
+ 
+												   
+						  
+			   
+ 
+
+    </script>
+</head>
+<body class="ms-backgroundImage" onload="OnLoad()">
+<script>
+try{
+
+    if(window.external && window.external.WebLogonOnAuthFailure) {
+        window.external.WebLogonOnAuthFailure();
+    }
+}catch(e){};
+    try {
+        window.external.OnHostClose();
+    } catch(e) { }
+</script>
+<noscript>
+<div id="noscript_warning_red">JavaScript is not enabled. Please enable JavaScript in your browser or contact your system administrator for assistance.</div>
+<div id="noscript_warning_newsession"><span data-text-swap="To open a new session, please">כדי להתחיל פעילות מחדש, בבקשה</span> <A href="/"><span data-text-swap="Click Here">לחץ כאן להמשך</span></A></div>
+</noscript>
+
+    <div class="main" id="main">
+        <div id="s4-workspace " class="ms-core-overlay">
+
+<meta name="viewport" id="viewport" content="initial-scale=1.0" />       
+<meta name="robots" context="noindex,nofollow">
+<script language="javascript">
+//orientation toolbox
+function setViewport(){
+    document.getElementById("viewport").setAttribute('content', Math.abs(window.orientation) == 90 ? 'width=device-height, initial-scale=1' : 'width=device-width, initial-scale=1.0' );
+}
+setViewport();
+window.onorientationchange = function() {
+    setViewport();
+}
+    
+function toggleContrast()
+{
+    document.body.classList.toggle("contrastColors");
+}
+
+function onSelectedChange(strlng,f)
+{
+    load_js(strlng,f)
+    
+	var spans = document.getElementsByTagName("span");
+	for(var i = 0; i < spans.length; i++)
+	{
+		if (spans[i].getAttribute("data-text-swap") == spans[i].innerHTML) {
+			spans[i].innerHTML = spans[i].getAttribute("data-text-original");
+		} else {
+			if (spans[i].hasAttribute("data-text-swap")){
+				spans[i].setAttribute("data-text-original", spans[i].innerHTML);
+				spans[i].innerHTML = spans[i].getAttribute("data-text-swap");
+			}
+		}
+	}
+	
+	var x = document.getElementById("MasterMainZone");
+	var y = document.querySelector(".col-sm-7");
+	var yl = document.querySelector(".col-sml-7");
+	var yy = document.querySelector(".col-sm-5");
+	var yyl = document.querySelector(".col-sml-5");
+    var xy = document.getElementsByClassName("linkArrow");
+	var z = document.getElementById("container");
+	var labels = document.getElementsByClassName("label");
+	if (x.style.direction=="ltr") {
+		x.style.direction="rtl";
+		yl.classList.remove('col-sml-7');
+		yl.classList.add('col-sm-7');
+		yyl.classList.remove('col-sml-5');
+		yyl.classList.add('col-sm-5');
+		z.style.textAlign="right";
+		for(var i = 0; i < labels.length; i++)
+		{
+			labels[i].style.textAlign="";
+		}
+        for(var i = 0; i < xy.length; i++)
+        {
+        	xy[i].classList.remove('reverseDir');
+        }
+	} else {
+		x.style.direction="ltr";
+		//y.style.float = "left";
+		y.classList.remove('col-sm-7');
+		y.classList.add('col-sml-7');
+		yy.classList.remove('col-sm-5');
+		yy.classList.add('col-sml-5');
+		z.style.textAlign="left";
+		for(var i = 0; i < labels.length; i++)
+		{
+			labels[i].style.textAlign="left";
+		}
+        for(var i = 0; i < xy.length; i++)
+        {
+            xy[i].classList.add('reverseDir');
+        }
+	}
+	
+	var admcfi = document.getElementsByClassName("admission-contact-form-icon");
+	for (var i = 0; i < admcfi.length; i++) {
+		if (admcfi[i].style.marginRight == "14px") {
+			admcfi[i].style.marginLeft = "14px";
+			admcfi[i].style.marginRight = 0;
+		} else {
+			admcfi[i].style.marginLeft = 0;
+			admcfi[i].style.marginRight = "14px";
+		}
+	}
+}
+</script>
+
+        <header id="navbar-fixed-top" role="banner" class="affix">
+            <section class="content" role="region">
+				<div class="topHeader" id="topHeader">
+					<div class="container-fluid">
+    				<ul class="topMenu">
+                    	<li class="language" id="language" style="float: left;display: list-item;">
+                    		<div class="" style="width: 100%;">
+                    			<button onclick="onSelectedChange('','fButton')" id="example" type="button" class="btn small">
+                    				<span class="filter-option pull-left" data-text-swap="עברית">En</span>&nbsp;
+                    			</button>
+                    		</div>
+                    	</li>
+                    	<li class="contrast" id="contrast" style="display: list-item;float: left;margin-left: 10px;">
+                    		<div class="" style="width: 100%;">
+                    			<button onclick="toggleContrast()" id="contrst" type="button" class="btn small" style="
+                    			background: url(/public/share/images/contrast.png) no-repeat center center;
+                    			background-color: white;
+                    			">
+                    				<span><span class="sr-only" data-text-swap="ניגודיות">Contrast</span></span>&nbsp;
+                    			</button>
+                    		</div>
+                    	</li>
+                    </ul>
+						
+						
+				     <div id="maxTimeoutTd"><span id="maxTimeoutTag" title=""></span></div>
+
+			 
+						<div class="brand active" id="brand">
+							<a title="הבינתחומי הרצליה - לדף הבית" class="imgContainer" href="https://www.idc.ac.il/he">
+								<img alt="הבינתחומי הרצליה - לדף הבית" class="regular" src='/public/images/customization/Common/IDC_Multiple_Domain_PreProd_general_ui/logo_image_en.png'>
+								<img alt="הבינתחומי הרצליה - לדף הבית" class="affixImg hidden-xs hidden-sm" src='/public/images/customization/Common/IDC_Multiple_Domain_PreProd_general_ui/logo_image_en.png'>
+							</a>
+						</div>
+					</div>
+				</div>
+				<nav class="navBarContainer collapse" id="navBarContainer" role="navigation" tabindex="0">
+				</nav>
+            </section>
+		</header>	 
+        <main class="wrapper" id="wrapper" role="main" tabindex="0">
+
+		<div id="ctl00_schoolNavID_mainSchoolNav" class="schoolNav" style="display:none">
+			<section class="menuLvl2 " id="menuLvl2" role="region">
+                <div class="container-fluid">
+                    <div class="scrollPane horizontal-only" style="overflow: hidden; padding: 0px; width: 0px;">
+                        
+                        
+                    <div class="jspContainer" style="width: 0px; height: 0px;"><div class="jspPane" style="padding: 0px; top: 0px; left: 0px; width: 0px;"></div></div></div>
+                </div>
+            </section>
+		</div>
+                    <div id="s4-bodyContainer">                        
+                        <div id="contentRow">
+                            <div id="contentBox" class="ContentBox" aria-live="polite" aria-relevant="all">
+                                <div id="notificationArea" class="ms-notif-box"></div>
+                                <div id="DeltaPageStatusBar">
+									<div id="pageStatusBar" class="ms-status-blue" style="display: none;"></div>
+								</div>
+                                <div id="DeltaPlaceHolderMain">
+                                    <a id="mainContent" name="mainContent" tabindex="-1"></a>
+                                    <div class="StripContent">
+                                        <div class="container" style="width: 100%;">
+                                            <div class="Content" style="height: 100%;">
+                                                <div class="row MainContent">
+
+<div class="col-xs-12 col-sm-12 col-md-12 SiteContent" id="MasterMainZone" style="width: 100%;">
+	<div id="ctl00_ctl30_eladAdmissionScholarships" web-url="https://www.idc.ac.il/he" class="ms-WPBody">
+
+		<section class="interestSection collapse in" id="interestSection" role="region" aria-expanded="true">
+			<div id="container-wait" class="container-fluid col10">
+				<div class="topTitle"><span data-text-swap="Please wait...">...נא להמתין</span></div>
+				<div class="spinner">
+				  <div class="rect1"></div>
+				  <div class="rect2"></div>
+				  <div class="rect3"></div>
+				  <div class="rect4"></div>
+				  <div class="rect5"></div>
+				</div>
+			</div>
+			<div id="container" class="container-fluid col10" style="display: none;">
+				<div class="subDropDown tabsContainer collapse in" data-bind="attr: { id: &#39;interestDropDown&#39; + $index(), class: &#39;subDropDown tabsContainer collapse &#39; + ($index() == 0 ? &#39;in&#39; : &#39;&#39;) }" id="interestDropDown0">
+						<h3 class="topTitle" data-bind="text: eldFormTitle"><span data-text-swap="Reichman University Logout">אוניברסיטת רייכמן - התנתקות</span></h3>
+						<p id="interaction_table_header" class="bottomTitle" data-bind="text: eldFormSubTitle"></p>
+						<div class="content row form-webpart" data-submit-email="0" >
+							<div class="col-sm-7">
+                                <div class="formContainer" id="credentials_table">
+									<div>
+										<div class="bottomTitle" id="credentials_table_header"></div>
+										<div class="row" id="credentials_table_postheader"></div>
+
+<!-- <div class="form-group col-sm-4"></div> -->
+<div class="form-group col-sm-12 titleText"">
+                    <font color=red><span data-text-swap="Session information cannot be found. This can happen because your browser restarted after a session was initiated. If this occurred, click the link below to continue.<br>This can also happen because cookies are disabled in your browser. If so, enable cookies in your browser and start a new session.">לא ניתן למצוא מידע על פעילות אחרונה באתר. מצב זה עשוי לקרות מכיוון שהדפדפן שלך הופעל מחדש לאחר תחילתה של פעילות באתר. במקרה זה, לחץ על הקישור למטה כדי להמשיך<br>הדבר עלול לקרות גם מכיוון שקבצי cookie לא מאופשרים בדפדפן שלך. אם כן, אפשר קבצי cookie בדפדפן שלך והתחל את הפעולה מחדש.</span></font><br>                    <br><span data-text-swap="Thank you for using <b>IDC-Herzliya Login Service</b>">תודה שהשתמשת בשירות </span><br><br>
+                    <span data-text-swap="To open a new session, please">כדי להתחיל פעילות מחדש, בבקשה</span> <A href='/'><span data-text-swap="Click Here">לחץ כאן להמשך</span></A></div>
+<!-- 
+<div class="form-group col-sm-8">
+<div class="form-group col-sm-12">
+</div>
+</div> -->
+
+<div id=""submit_row>
+<!-- <div class="form-group col-sm-8"></div> -->
+<div class="form-group col-sm-12">
+<a href='/' id="linkBtn" role="button" class="btn big"><span data-text-swap="Click Here">לחץ כאן להמשך</span></a>
+</div>
+</div>
+
+
+	
+                                    </div>
+									
+                                </div>
+                            </div>
+
+							
+							
+							
+<div id="contactinfo" class="col-sm-5" style="margin-top: 44px;">
+	<h4 class="titleText"><span data-text-swap="Having trouble? <br> Contact support:">נתקלת בבעיה?<br>פנה/י לתמיכה:</span></h4>
+	<ul class="moreInfoList">
+		<li>
+			<a title="צור קשר" class="link" href="https://hd.idc.ac.il/servicePortal/submitIncident">
+											
+				<i alt="צור קשר" class="admission-contact-form-icon icon-icon06"></i>
+				<div><span data-text-swap="Contact us">צור קשר</span></div>
+			</a>
+		</li>
+        <li>
+            <a title="Whatsapp" class="link" href="https://web.whatsapp.com/send?phone=+97299602400" target="_blank">
+            	<i alt="Whatsapp" class="admission-contact-form-icon">
+        			<span>
+        				<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 39 39">
+        				<path fill="#00E676" d="M10.7 32.8l.6.3c2.5 1.5 5.3 2.2 8.1 2.2 8.8 0 16-7.2 16-16 0-4.2-1.7-8.3-4.7-11.3s-7-4.7-11.3-4.7c-8.8 0-16 7.2-15.9 16.1 0 3 .9 5.9 2.4 8.4l.4.6-1.6 5.9 6-1.5z"></path>
+        				<path fill="#FFF" d="M32.4 6.4C29 2.9 24.3 1 19.5 1 9.3 1 1.1 9.3 1.2 19.4c0 3.2.9 6.3 2.4 9.1L1 38l9.7-2.5c2.7 1.5 5.7 2.2 8.7 2.2 10.1 0 18.3-8.3 18.3-18.4 0-4.9-1.9-9.5-5.3-12.9zM19.5 34.6c-2.7 0-5.4-.7-7.7-2.1l-.6-.3-5.8 1.5L6.9 28l-.4-.6c-4.4-7.1-2.3-16.5 4.9-20.9s16.5-2.3 20.9 4.9 2.3 16.5-4.9 20.9c-2.3 1.5-5.1 2.3-7.9 2.3zm8.8-11.1l-1.1-.5s-1.6-.7-2.6-1.2c-.1 0-.2-.1-.3-.1-.3 0-.5.1-.7.2 0 0-.1.1-1.5 1.7-.1.2-.3.3-.5.3h-.1c-.1 0-.3-.1-.4-.2l-.5-.2c-1.1-.5-2.1-1.1-2.9-1.9-.2-.2-.5-.4-.7-.6-.7-.7-1.4-1.5-1.9-2.4l-.1-.2c-.1-.1-.1-.2-.2-.4 0-.2 0-.4.1-.5 0 0 .4-.5.7-.8.2-.2.3-.5.5-.7.2-.3.3-.7.2-1-.1-.5-1.3-3.2-1.6-3.8-.2-.3-.4-.4-.7-.5h-1.1c-.2 0-.4.1-.6.1l-.1.1c-.2.1-.4.3-.6.4-.2.2-.3.4-.5.6-.7.9-1.1 2-1.1 3.1 0 .8.2 1.6.5 2.3l.1.3c.9 1.9 2.1 3.6 3.7 5.1l.4.4c.3.3.6.5.8.8 2.1 1.8 4.5 3.1 7.2 3.8.3.1.7.1 1 .2h1c.5 0 1.1-.2 1.5-.4.3-.2.5-.2.7-.4l.2-.2c.2-.2.4-.3.6-.5s.4-.4.5-.6c.2-.4.3-.9.4-1.4v-.7s-.1-.1-.3-.2z"></path>
+        				</svg>
+        			</span>
+        		</i>
+                <div>09-9602400</div>
+            </a>
+        </li>
+		<li>
+			<a class="link" title="טלפון" href="tel:09-9602400">
+				<i alt="טלפון" class="admission-contact-form-icon icon-icon07"></i>
+				<div>09-9602400</div>
+																												 
+			</a>
+		</li>
+		<li>
+			<div class="link">
+				<i class="admission-contact-form-icon icon-icon08"></i>
+											
+				<div>
+					<span data-text-swap="Opening Hours<br>Sun-Thu: 8:00-18:00 | Fri: 8:00-13:00">
+					שעות פעילות:
+					<br>
+					בימים א' עד ה': 8:00-18:00 | ביום ו': 8:00-13:00 
+					</span>
+				</div>
+			</div>
+		</li>
+	</ul>
+</div>
+	   
+	   
+                        </div>
+				</div>
+			</div>
+		</section>
+	</div>
+</div>
+													
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>                           
+                        </div>
+                    </div>
+		</main>
+		<footer role="contentinfo" id="footerArea">
+			<div class="container-fluid col10">                 
+        		<div class="allRightsReserved"><span data-text-swap="© All rights reserved to Reichman University | 2021">© כל הזכויות שמורות לאוניברסיטת רייכמן | 2021</span></div>
+            </div>
+		</footer>               
+		</div>
+	</div>
+	
+															
+	   
+<DIV ID="logoutActivexContainer" class="inspectionHostDIVSmall"></DIV>
+</body>
+</html>
