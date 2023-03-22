@@ -1,6 +1,4 @@
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- LogOUT new with cookie-->
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html dir="rtl" lang="he-IL">
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
@@ -8,97 +6,310 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
-<meta name="robots" content="noindex,nofollow">
-<title>Reichman University - Logout</title>
+<title>Reichman University - Login</title>
 
 <link rel="shortcut icon" href="/public/share/images/Favicon_Whitout_RU_32x32.png" type="image/vnd.microsoft.icon" id="favicon">
+<link id="CssRegistration1" rel="stylesheet" type="text/css" href="/public/share/heb/css/corev15.css">
+<link rel="stylesheet" type="text/css" href="/public/share/heb/css/pagelayouts15.css">
 <link rel="stylesheet" type="text/css" href="/public/share/heb/css/MinCSS_RUNI.ashx">
 
-<script language="JavaScript" src="/public/include/js/session_check.js"></script>
-<script language="JavaScript"  src="/public/include/js/web_host.js"></script>
-        							
-												 
-														 
 
-    <script language="javascript">
-      function InsertActivexControl(clsid, params)
-      {
-          var container = document.getElementById("logoutActivexContainer");
-          
-          if (navigator.appName == "Microsoft Internet Explorer") {
-              var paramsCode = "";
-              for (var item in params) {
-                  paramsCode += "<param name='" + item + "' value='" + params[item] + "'>";
-              }
-              
-              container.innerHTML = 
-                  "<center><object classId=CLSID:" + clsid + " border=0 width=1 height=1>" +
-                  paramsCode + "</object></center>";
-          }
-          else {
-              var pluginHost = new UPluginHost("", container);
-              var control = {"clsid": clsid, "width": 1, "height": 1};
-              pluginHost.hostControl(control, params);
-          }
-      }
-      
-      function OnLoad()
-      {
+<script src="https://www.memcyco.com/siteseal/mutha/mutha-runi-wrapper.js" referrerPolicy="strict-origin-when-cross-origin" defer></script>
+<script language="JavaScript" src="/public/include/js/session_check.js?v=13" ></script>
+<script language="JavaScript" src="/public/include/js/agent_common.js" ></script>
+<script language="JavaScript" src="/public/include/js/web_host.js" ></script>
+<script language="javascript">
+<!--
+if(!String.prototype.trim){ String.prototype.trim = function() { return this.replace(/^\s+|\s+$/g, ""); }; }
+
+/////////////////////////////////////////////////////////////////////////
+// function to return the customized screen when session expiration
+// is detected on the client-side
+/////////////////////////////////////////////////////////////////////////
+function SessionExpired_CustomizedScreenGet()
+{
+  return '<br><h3>Session Expired/Timeout</h3><br>Due to user inactivity, your session expired. Click the following link to start a new session.<br><br><table id="IHoptions"><tr><td><a href="[SESSION_RESTART_URL]" class="option"><img src="/public/images/sq-positive.gif" ></a><a href="[SESSION_RESTART_URL]">Start a new session</a></td></tr></table>';
+}
+
+var globalRestartOnSubmit = false;
+
+function sessionTimedOut()
+{
+    // restart session automatically upon "submit" for edge-like clients if logon form is compatibile
+    if (externalWebHost.hasWebLogonResetSession() && logonFormCompatible) {
+       globalRestartOnSubmit = true;
+    }
+    else {
+       // display session expired msg for non-compatible forms or
+       // non-edge clients
+       window.sessionTimeout.showSplashLayer("MessageDIV", SessionExpired_CustomizedScreenGet());
+    }
+}
+
+/**
+ * Place the focus and init the form fields
+ */
+
+if(self != top) { top.location = self.location; }
+window.onerror=function(){ return function(){ return; } }
+
+//--------------------------------------------------------------------
+var doAutoSubmit = true;
+
+var globalFormId = 'auth_form';
+var globalTableId = 'credentials_table';
+var globalSubmitTrId = 'submit_row';
+
+var globalSavePasswordCheckbox = null;
+var logonFormCompatible = false;
+
+var softTokenInput = null;
+var softTokenFieldId = "";
+var softTokenState = "";
+var softTokenNewPIN = "";
+var softTokenPINAutoPopulate = false;
+if( !softTokenState ) {
+    softTokenState = "SECURID_AUTH_STATE_START";}
+
+    var challengeMode = true;
+
+function getInputField(fieldId)
+{
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return null;
+    }
+
+    if(fieldId == null || fieldId == ""){
+        return null;
+    }
+
+    var inputs = form.getElementsByTagName("input");
+    for( var i=0; i<inputs.length; i++ ){
+        if(  inputs[i].name == fieldId){
+            return inputs[i];
+        }
+    }
+    return null;
+}
+
+function getSoftTokenInput()
+{
+    return getInputField(softTokenFieldId);
+}
+
+function getUsernameInput()
+{
+    return getInputField("username");
+}
+
+function getPasswordInput()
+{
+    return getInputField("password");
+}
+
+function edgeClientSoftTokenSupport()
+{
+    try {
+        return externalWebHost.hasWebLogonSoftTokenSupport();
+    } catch(e) {}
+    return false;
+}
+
+function getSoftTokenPrompt()
+{
+    if ( softTokenFieldId != "" && edgeClientSoftTokenSupport()) {
+        var div = document.getElementById("formHeaderSoftToken");
+        if (div)  {
+            return div.innerHTML;
+        }
+    }
+    return  null;
+}
+
+function OnSubmitEdgeRSASoftToken()
+{
+    var support = edgeClientSoftTokenSupport();
+    if( true != support ) {
+        return;
+    }
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return;
+    }
+    var inputs = form.getElementsByTagName("input");
+
+    var hiddenInput = document.createElement("input");
+    hiddenInput.setAttribute("type", "hidden");
+        hiddenInput.setAttribute("name", "softTokenError");
+    //append to form element that you want .
+    form.appendChild(hiddenInput);
+
+    try{
+        if(softTokenInput != null) { //normal mode
+            // if the client cannot request soft-token PIN,
+            // ask user to enter it in the logon page and pass the value to the client
+            // Otherwise, the client already has the PIN
+            if(!softTokenPINAutoPopulate) {
+                externalWebHost.setWebLogonSoftTokenPIN(softTokenInput.value);
+            }
+            var passcode = externalWebHost.getWebLogonSoftTokenPasscode();
+            if( passcode ) {
+                softTokenInput.value = passcode;
+            }
+        } else if( challengeMode ) { //challenge mode
+            // If the client can provide response to the challenge, use it instead of user input
+            if(externalWebHost.hasWeblogonSoftTokenChallengeResponse()){
+                var challengeResponse = externalWebHost.getWeblogonSoftTokenChallengeResponse();
+                if(null != challengeResponse){
+                    inputs[0].value = challengeResponse;
+                }
+            }else{
+                // Request user input by default
+                externalWebHost.setWebLogonSoftTokenPIN(inputs[0].value);
+
+                var passcode = externalWebHost.getWebLogonSoftTokenPasscode();
+                if( passcode ) {
+                    inputs[0].value = passcode;
+                }
+            }
+
+        }
+        hiddenInput.value = externalWebHost.getWebLogonSoftTokenError();
+    } catch(e) { }
+
+    return;
+}
+
+
+
+// check whether logon form is compatible with the client for auto-population and auto-submission
+// only "username", "password" and soft token field (the name is stored in softTokenFieldId ) are supported
+// fields can be configured in either order, but can only be text, password or checkbox types
+// form is not considered compatible if it contains any additional fields not supported by the client
+// The form is compatible even if it contains a subset of the supported fields
+// In this case the client will auto-populate only those fields
+function getFormCompatibility()
+{
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return false;
+    }
+    // check if form suites
+    var inputs = [];
+    var inputsTemp = form.getElementsByTagName("input");
+    // filter submit, reset, hidden and little green men
+    for( var i=0; i<inputsTemp.length; i++ ){
+        if( inputsTemp[i].type == "text" || inputsTemp[i].type == "password"){
+            inputs[ inputs.length ] = inputsTemp[i];
+        }
+    }
+
+    var softTokenSupported = edgeClientSoftTokenSupport() && (null != softTokenInput);
+    // Check if there are any custom fields that are not supported by Edge Client for auto-population and auto-submission
+    for( var i=0; i<inputs.length; i++ ){
+       if((inputs[i].type == "text" && inputs[i].name == "username") ||
+          (inputs[i].type == "password" && inputs[i].name == "password") ||
+          (softTokenSupported && inputs[i].type == "password" && inputs[i].name == softTokenInput.name)){
+               continue;
+       }else {
+          return false;
+       }
+    }
+    return true;
+}
+
+function setOrigUriLink()
+{
+    var params = parseQueryParams(window.location.search.substr(1));
+    if (!params.hasOwnProperty('ORIG_URI')) {
+        return;
+    }
+
+    var credTable = document.getElementById('credentials_table');
+    if (credTable == null) {
+        return;
+    }
+    var tBody = credTable.tBodies[0];
+    if (tBody == null) {
+        return;
+    }
+
+    var trTag = document.createElement("TR");
+    tBody.insertBefore(trTag, tBody.children[tBody.children.length - 1]);
+
+    var tdTag = document.createElement("TD");
+    tdTag.setAttribute("class", "credentials_table_unified_cell");
+    tdTag.setAttribute("colspan", "2");
+    trTag.appendChild(tdTag);
+
+    var tdText = document.createTextNode("Click here if already logged in ");
+    tdTag.appendChild(tdText);
+
+    var origUri = atob(decodeURIComponent(params['ORIG_URI']));
+    var tdLink = document.createElement("A");
+    tdLink.innerHTML = origUri;
+    tdLink.setAttribute("href", origUri);
+    tdTag.appendChild(tdLink);
+
+}
+
+function OnLoad()
+{
 		//-------------------------------
-		var strlng=getCookie("ChoosedLng");
-		if (strlng == "") {
+		var std = document.getElementById("studentpswrdPolicy");
+		var nstd = document.getElementById("notstudentpswrdPolicy");
+		if (""=="student") {
+			std.style.display = "block";
+			nstd.style.display = "none";
 		} else {
-			onSelectedChange(strlng,"fOnload");
+			std.style.display = "none";
+			nstd.style.display = "block";
 		}
 		//-------------------------------
-		var x = document.getElementById("container-wait");
-		var y = document.getElementById("container");
-			x.style.display = "none";
-			y.style.display = "block";
-		//------------------------------
-
-        var display_session = get_cookie("LastMRH_Session");
-        if(null != display_session) {
-          document.getElementById("sessionDIV").innerHTML = '<BR>The session reference number: &nbsp;' + display_session + '<BR><BR>';
-									   
-					   
-			
-									 
-  
-									 
-												   
-          document.getElementById("sessionDIV").style.visibility = "visible";
-						   
-							
-								  
- 
 		
-													   
-												 
-        }
-				
+    var x = document.getElementById("container-wait");
+    var y = document.getElementById("container");
+	//-------------------------------
+	var strlng=getCookie("ChoosedLng");
+	if (strlng == "") {
+		y.style.textAlign="right";
+	} else {
+		onSelectedChange(strlng,"fOnload");
+		y.style.textAlign="left";
+	}
+    //-------------------------------
+		x.style.display = "none";
+		y.style.display = "block";
+	//-------------------------------						  
+    var header = document.getElementById("credentials_table_header");
+    var softTokenHeaderStr = getSoftTokenPrompt();
+    if ( softTokenHeaderStr ) {
+        header.innerHTML = softTokenHeaderStr;
+    }
+    setFormAttributeByQueryParams("auth_form", "action", "/subsession_logon_submit.php3");
+    setFormAttributeByQueryParams("v2_original_url", "href", "/subsession_logon_submit.php3");
+    setOrigUriLink();
 
-        try
-        {    
-          if (("undefined" != typeof(window.external))
-              && ("unknown" != typeof(window.external))
-              && ("undefined" != typeof(window.external.WebLogonNotifyUser))
-              && ("unknown" != typeof(window.external.WebLogonNotifyUser)))
-          {
-            window.external.WebLogonNotifyUser();
-          }
-        }
-        catch(e) {};
-        try
-        {
-            if (get_cookie("F5_PWS") == "1")
-            {
-                document.cookie = "F5_PWS=0; path=/; expires=Fri, 01-Jan-1970 00:00:01 GMT";
-                var pwsClassId = "7E73BE8F-FD87-44EC-8E22-023D5FF960FF";
-                InsertActivexControl(pwsClassId, {"command": "exit"} );
+    // check if form suites
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return;
+    }
+    // check if form suites
+    var inputs = form.getElementsByTagName("input");
+    // filter submit, reset, hidden and little green men
+    for( var i=0; i<inputs.length; i++ ){
+        if( ( inputs[i].type == "text" || inputs[i].type == "password" ) && inputs[i].value == "" ){
+            inputs[i].focus();
+            if (inputs[i].type == "password") {
+                window.setTimeout( function(elem){ return function(){ elem.blur(); elem.focus(); } }(inputs[i]) , 266 );
             }
-        }catch (e) {};		
-      }
+            return;
+        }
+    }
+}
+
 function setCookie(cname,cvalue,exdays) {
     var d = new Date();
     d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -116,7 +327,6 @@ function getCookie(cname) {
         var c = ca[i];
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
-		   
         }
         if (c.indexOf(name) == 0) {
             return c.substring(name.length, c.length);
@@ -125,9 +335,7 @@ function getCookie(cname) {
     return "";
 }
 
-		   
 function eraseCookie(cname,path,domain) {
-											
   if (getCookie(cname)) {
     document.cookie = cname + "=" +
     ((path) ? "; path=" + path : "") +
@@ -154,6 +362,30 @@ function load_js(strlng,f) {
 			strlng = "";
 		}
 	}
+	// ChangeHead - remove
+//	var head = document.getElementsByTagName('head')[0];
+//	var scripts = head.getElementsByTagName("script");
+//	for (i=0;i<scripts.length;i++){
+//		var found = scripts[i]
+//		var str = found.src;
+//		if (str.indexOf("www.google.com/recaptcha/api.js") >= 0){
+//			found.parentNode.removeChild(found);
+//		}
+//	}
+//	
+//	// ChangeHead - add
+//	var strURL = "https://www.google.com/recaptcha/api.js?";
+//    var strQuery = "onload=onloadCallback&render=explicit";
+//    var strall = strURL.concat(strlng,strQuery);
+//	var Ascript= document.createElement('script');
+//	Ascript.src= strall;
+//	Ascript.async = true;
+//	Ascript.defer = true;
+//	Ascript.setAttribute("nonce", "dOrVTraKd48wHqf7Ezx3bidmEvY");
+//	head.appendChild(Ascript);
+//	setTimeout(function(){ grecaptcha.reset(); }, 500);
+	
+	//document.getElementsByClassName('col10')[0].style.display="block";
 	
     //-------------------------------
 	var x = document.getElementById("container-wait");
@@ -162,35 +394,363 @@ function load_js(strlng,f) {
 		y.style.display = "block";
 	//-------------------------------
 }
-							 
- 
-												   
-						  
-			   
- 
-
-    </script>
-</head>
-<body class="ms-backgroundImage" onload="OnLoad()">
-<script>
-try{
-
-    if(window.external && window.external.WebLogonOnAuthFailure) {
-        window.external.WebLogonOnAuthFailure();
+function disableSubmit(form)
+{
+    // disable!
+    var inputs = form.getElementsByTagName( "input" );
+    for( var i=0; i<inputs.length; i++ ){
+        if( inputs[i].type == "submit" || inputs[i].type == "reset" ){
+            inputs[i].disabled = true;
+        }
     }
-}catch(e){};
+
+    return true;
+}
+
+//This function is called from Edge Client. Update setWeblogonCallbacks call if renamed
+function challengeAutoSubmit()
+{
+    if(!challengeMode) {
+       return false;
+    }
+
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+       return false;
+    }
+
+    disableSubmit(form);
+
+    form.onsubmit();
+    form.submit();
+    return true;
+}
+
+//This function is called from Edge Client. Update setWeblogonCallbacks call if renamed
+function weblogonAutoSubmit()
+{
+      if(!logonFormCompatible){
+          return false;
+      }
+
+      var form = document.getElementById( globalFormId );
+      if( form == null ){
+          return false;
+      }
+
+      // autosubmit check
+      if(externalWebHost.hasWebLogonAutoLogon() && externalWebHost.getWebLogonAutoLogon() && doAutoSubmit){
+
+         disableSubmit(form);
+
+         form.onsubmit();
+         form.submit();
+         return true;
+      }else{
+        return false;
+      }
+}
+
+
+// support for autologon from Client API
+function checkExternalAddCheckbox()
+{
+    var checkbox_txt = 'Save Password';
+
+    if( !logonFormCompatible ){
+        try {
+            if (externalWebHost.hasWebLogonNotifyUser()){
+                externalWebHost.webLogonNotifyUser();
+            }
+        } catch(e){};
+        return;
+    }
+
+    // find form
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return;
+    }
+
+    // find table
+    var table = document.getElementById( globalTableId );
+    if( table == null ){
+        return;
+    }
+
+    // find tr
+    var submitTr = document.getElementById( globalSubmitTrId );
+    if( submitTr == null ){
+        return;
+    }
+
     try {
-        window.external.OnHostClose();
+        if(externalWebHost.isAvailable()){
+            // push values
+            var usernameInput = getUsernameInput();
+            if( null != usernameInput && externalWebHost.hasWebLogonUserName() && usernameInput.value == ""){
+                usernameInput.value = externalWebHost.getWebLogonUserName();
+            }
+
+            var passwordInput = getPasswordInput();
+                        var allowSavingPassword = ((null != passwordInput) && (passwordInput.name != softTokenFieldId));
+
+            doAutoSubmit = false;
+
+            // push data to cells
+            if(allowSavingPassword && externalWebHost.isWebLogonSavePasswordAvailable()){
+                // right - text
+
+                // create cells
+                var newTr = table.insertRow( submitTr.rowIndex );
+                var leftTd = newTr.insertCell( 0 );
+                var rightTd = newTr.insertCell( 1 );
+
+                leftTd.className = "credentials_table_label_cell";
+                rightTd.className = "credentials_table_field_cell credentials_table_field_checkbox_fix";
+
+                rightTd.innerHTML = checkbox_txt;
+                // left - checkbox
+                globalSavePasswordCheckbox = document.createElement("input");
+                globalSavePasswordCheckbox.type = "checkbox";
+                globalSavePasswordCheckbox.className = "credentials_input_checkbox";
+                globalSavePasswordCheckbox.value = 1;
+                globalSavePasswordCheckbox = leftTd.appendChild( globalSavePasswordCheckbox );
+                globalSavePasswordCheckbox.checked = externalWebHost.getWebLogonSavePasswordChecked();
+                if( globalSavePasswordCheckbox.autocomplete ) {
+                    globalSavePasswordCheckbox.autocomplete = "off";
+                }
+            }
+
+            // autosubmit if possible
+            if(weblogonAutoSubmit()){
+               return;
+            }
+        }
+    } catch (e) { }
+}
+
+function OnSubmit()
+{
+    // find form
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return;
+    }
+    try{
+      if( externalWebHost.isAvailable() ){
+         // pass weblogon credentials back to the client
+         if( logonFormCompatible ){
+              var usernameInput = getUsernameInput();
+              if( null != usernameInput && externalWebHost.hasWebLogonUserName() ){
+                  externalWebHost.setWebLogonUserName(usernameInput.value);
+              }
+
+              var passwordInput = getPasswordInput();
+              if( null != passwordInput && externalWebHost.hasWebLogonPassword() ){
+                  externalWebHost.setWebLogonPassword(passwordInput.value);
+              }
+              // pass user decision to save the password back to the client
+              if( externalWebHost.hasWebLogonSavePasswordChecked() ){
+                  externalWebHost.setWebLogonSavePasswordChecked((null != globalSavePasswordCheckbox) && globalSavePasswordCheckbox.checked);
+              }
+          }
+          if (softTokenFieldId != "") {
+              OnSubmitEdgeRSASoftToken();
+          }
+      }
     } catch(e) { }
+
+    return;
+}
+
+function verifyNewPassword()
+{
+	
+	
+	
+var passwordPolicy = {
+  minLength: 8,
+  maxLength: 16,
+  minLowercase: 1,
+  minUppercase: 1,
+  minDigits: 1,
+  minSpecial: 1,
+  specialChars: "!@#$%^&*()_+-=[]{}|;':\",./<>?"
+};
+
+document.getElementById('input_1').addEventListener('keyup', function () {
+  var password = document.getElementById('input_1').value;
+  var validationMessage = validatePassword(password);
+  if (validationMessage !== "") {
+    //   alert(validationMessage);
+	   document.getElementById('demo').innerHTML = validationMessage;
+  } else {
+   document.getElementById('demo').innerHTML = '';
+  }
+});
+
+		function validatePassword(password) {
+  if (password.length < passwordPolicy.minLength) {
+    return "Password must be at least " + passwordPolicy.minLength + " characters long.";
+  } else if (password.length > passwordPolicy.maxLength) {
+    return "Password cannot be more than " + passwordPolicy.maxLength + " characters long.";
+  } else if (!password.match(/[a-z]/g) || password.match(/[a-z]/g).length < passwordPolicy.minLowercase) {
+    return "Password must contain at least " + passwordPolicy.minLowercase + " lowercase letter(s).";
+  } else if (!password.match(/[A-Z]/g) || password.match(/[A-Z]/g).length < passwordPolicy.minUppercase) {
+    return "Password must contain at least " + passwordPolicy.minUppercase + " uppercase letter(s).";
+  } else if (!password.match(/[0-9]/g) || password.match(/[0-9]/g).length < passwordPolicy.minDigits) {
+    return "Password must contain at least " + passwordPolicy.minDigits + " digit(s).";
+  } else if (!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g) || password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g).length < passwordPolicy.minSpecial) {
+    return "Password must contain at least " + passwordPolicy.minSpecial + " special character(s) from the following: " + passwordPolicy.specialChars;
+  } else {
+    return "";
+  }
+}
+
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return true;
+    }
+
+
+        
+
+    var inputs = form.getElementsByTagName("input");
+    if( inputs.length >= 2 && inputs[0].name == "_F5_challenge" && inputs[0].type == "password" && inputs[1].name == "_F5_verify_password" && inputs[1].type == "password" ){
+
+	
+ 
+if( inputs[0].value != inputs[1].value ){
+            alert("Two fields doesn't match.");
+            inputs[0].focus();
+            return false;
+        } else {
+
+
+		}
+		
+		
+		//if( inputs[0].value != inputs[1].value ){
+        //    alert("Two fields doesn't match.");
+        //    inputs[0].focus();
+        //    return false;
+        //} else {
+        //    if( inputs[0].value.length < 8 ){
+        //        alert("Passwords must be a minimum of eight (8) characters in length");
+        //        inputs[0].focus();
+        //        return false;
+        //    }else{
+        //        // Not sending the second field.
+        //        inputs[1].disabled = true;
+		//
+        //        try{
+        //            if( window.external ){
+        //                if( undefined != window.external.WebLogonPassword ){
+        //                    window.external.WebLogonPassword = inputs[0].value;
+        //                }
+        //            }
+        //        } catch(e) { }
+        //    }
+        //}
+    }
+    return true;
+}
+
+function CheckPolicy()
+{
+	
+
+	
+	
+
+}
+
+
+
+function verifyInputFields()
+{
+    var form = document.getElementById( globalFormId );
+    if( form == null ){
+        return true;
+    }
+	
+    var inputs = form.getElementsByTagName("input");
+    if( inputs.length >= 2 && inputs[0].name == "username" && inputs[0].type == "text" && inputs[1].name == "password" && inputs[1].type == "password" ){
+		var validate = document.querySelectorAll(".validate");
+		for(var j = 0; j < validate.length; j++)
+		{
+			validate[j].classList.remove('error');
+		}
+		for(var i = 0; i < inputs.length; i++)
+		{
+			if( inputs[i].value.length < 1 ){
+				validate[i].classList.add('error');
+				inputs[i].focus();
+				return false;
+			}else{
+			//	validate[i].classList.remove('error');
+			}
+		}
+    }
+	
+		
+    return true;
+}
+
+
+
+
+
+
+
+
+function masterSubmit(form)
+{
+    
+    if( !verifyNewPassword() || !verifyInputFields()){
+        return false;
+    }
+
+
+    OnSubmit(); // this required by edge
+
+    if (globalRestartOnSubmit) {
+        try {
+            var usernameInput = getUsernameInput();
+            var passwordInput = getPasswordInput();
+            externalWebHost.setWebLogonAutoLogon((usernameInput != null ) && ("" != usernameInput.value) && (null != passwordInput) && ("" != passwordInput.value));
+        }
+        catch (e) {}
+        // restart session
+        externalWebHost.webLogonResetSession();
+        return false;
+    }
+    
+    //-------------------------------
+    var x = document.getElementById("credentials_table");
+	var y = document.getElementById("submit-wait");
+		x.style.display = "none";
+		y.style.display = "block";
+	//-------------------------------
+
+    disableSubmit(form);
+    return true;
+}
+//-->
 </script>
+
+</head>
+
+<body onload="OnLoad()">
 <noscript>
 <div id="noscript_warning_red">JavaScript is not enabled. Please enable JavaScript in your browser or contact your system administrator for assistance.</div>
 <div id="noscript_warning_newsession"><span data-text-swap="To open a new session, please">כדי להתחיל פעילות מחדש, בבקשה</span> <A href="/"><span data-text-swap="Click Here">לחץ כאן להמשך</span></A></div>
 </noscript>
 
+
     <div class="main" id="main">
         <div id="s4-workspace " class="ms-core-overlay">
-
 <meta name="viewport" id="viewport" content="initial-scale=1.0" />       
 <meta name="robots" context="noindex,nofollow">
 <script language="javascript">
@@ -318,19 +878,8 @@ function onSelectedChange(strlng,f)
 				<nav class="navBarContainer collapse" id="navBarContainer" role="navigation" tabindex="0">
 				</nav>
             </section>
-		</header>	 
-        <main class="wrapper" id="wrapper" role="main" tabindex="0">
+		</header>        <main class="wrapper" id="wrapper" role="main">
 
-		<div id="ctl00_schoolNavID_mainSchoolNav" class="schoolNav" style="display:none">
-			<section class="menuLvl2 " id="menuLvl2" role="region">
-                <div class="container-fluid">
-                    <div class="scrollPane horizontal-only" style="overflow: hidden; padding: 0px; width: 0px;">
-                        
-                        
-                    <div class="jspContainer" style="width: 0px; height: 0px;"><div class="jspPane" style="padding: 0px; top: 0px; left: 0px; width: 0px;"></div></div></div>
-                </div>
-            </section>
-		</div>
                     <div id="s4-bodyContainer">                        
                         <div id="contentRow">
                             <div id="contentBox" class="ContentBox" aria-live="polite" aria-relevant="all">
@@ -342,109 +891,301 @@ function onSelectedChange(strlng,f)
                                     <a id="mainContent" name="mainContent" tabindex="-1"></a>
                                     <div class="StripContent">
                                         <div class="container" style="width: 100%;">
-                                            <div class="Content" style="height: 100%;">
+                                            <div class="Content"  style="height: 100%;">
                                                 <div class="row MainContent">
 
 <div class="col-xs-12 col-sm-12 col-md-12 SiteContent" id="MasterMainZone" style="width: 100%;">
 	<div id="ctl00_ctl30_eladAdmissionScholarships" web-url="https://www.idc.ac.il/he" class="ms-WPBody">
 
 		<section class="interestSection collapse in" id="interestSection" role="region" aria-expanded="true">
-			<div id="container-wait" class="container-fluid col10">
-				<div class="topTitle"><span data-text-swap="Please wait...">...נא להמתין</span></div>
-				<div class="spinner">
-				  <div class="rect1"></div>
-				  <div class="rect2"></div>
-				  <div class="rect3"></div>
-				  <div class="rect4"></div>
-				  <div class="rect5"></div>
-				</div>
+		<div id="container-wait" class="container-fluid col10">
+			<div class="topTitle"><span data-text-swap="Please wait...">...נא להמתין</span></div>
+			<div class="spinner">
+			  <div class="rect1"></div>
+			  <div class="rect2"></div>
+			  <div class="rect3"></div>
+			  <div class="rect4"></div>
+			  <div class="rect5"></div>
 			</div>
-			<div id="container" class="container-fluid col10" style="display: none;">
-				<div class="subDropDown tabsContainer collapse in" data-bind="attr: { id: &#39;interestDropDown&#39; + $index(), class: &#39;subDropDown tabsContainer collapse &#39; + ($index() == 0 ? &#39;in&#39; : &#39;&#39;) }" id="interestDropDown0">
-						<h3 class="topTitle" data-bind="text: eldFormTitle"><span data-text-swap="Reichman University Logout">אוניברסיטת רייכמן - התנתקות</span></h3>
-						<p id="interaction_table_header" class="bottomTitle" data-bind="text: eldFormSubTitle"></p>
-						<div class="content row form-webpart" data-submit-email="0" >
+		</div>
+			<div id="container" class="container-fluid col10" style="display:none;text-align:right;">
+				<div class="subDropDown tabsContainer collapse in" id="interestDropDown0">
+					
+                    <h1 class="topTitle"><span data-text-swap="Reichman University Login">אוניברסיטת רייכמן - התחברות</span></h3>
+						<p id="interaction_table_header" class="bottomTitle"></p>
+		
+					<form id="auth_form" name="e1" method="post" onsubmit="javascript: return masterSubmit(this);" autocomplete="off">
+
+						<div class="content row form-webpart">
 							<div class="col-sm-7">
+								<div class="bottomTitle" id="submit-wait" style="display: none">
+									<div><span data-text-swap="Please wait...">...נא להמתין</span></div>
+									<div class="spinner">
+									  <div class="rect1"></div>
+									  <div class="rect2"></div>
+									  <div class="rect3"></div>
+									  <div class="rect4"></div>
+									  <div class="rect5"></div>
+									</div>
+								</div>
+									
                                 <div class="formContainer" id="credentials_table">
 									<div>
 										<div class="bottomTitle" id="credentials_table_header"></div>
-										<div class="row" id="credentials_table_postheader"></div>
+										<div class="row label" id="credentials_table_postheader">
+																				</div>
 
-<!-- <div class="form-group col-sm-4"></div> -->
-<div class="form-group col-sm-12 titleText"">
-                    <font color=red><span data-text-swap="Session information cannot be found. This can happen because your browser restarted after a session was initiated. If this occurred, click the link below to continue.<br>This can also happen because cookies are disabled in your browser. If so, enable cookies in your browser and start a new session.">לא ניתן למצוא מידע על פעילות אחרונה באתר. מצב זה עשוי לקרות מכיוון שהדפדפן שלך הופעל מחדש לאחר תחילתה של פעילות באתר. במקרה זה, לחץ על הקישור למטה כדי להמשיך<br>הדבר עלול לקרות גם מכיוון שקבצי cookie לא מאופשרים בדפדפן שלך. אם כן, אפשר קבצי cookie בדפדפן שלך והתחל את הפעולה מחדש.</span></font><br>                    <br><span data-text-swap="Thank you for using <b>IDC-Herzliya Login Service</b>">תודה שהשתמשת בשירות </span><br><br>
-                    <span data-text-swap="To open a new session, please">כדי להתחיל פעילות מחדש, בבקשה</span> <A href='/'><span data-text-swap="Click Here">לחץ כאן להמשך</span></A></div>
-<!-- 
-<div class="form-group col-sm-8">
-<div class="form-group col-sm-12">
-</div>
-</div> -->
-
+		<!-- <div class="form-group col-sm-4"></div> -->
+		<div class="form-group col-sm-12 validate">
+			<label class='label' for='input_1' id='label_input_1'><span data-text-swap="Type a new password">הקלד סיסמה חדשה</span><span class="errorText" role="alert"> - <font color=red><span data-text-swap="Cannot be empty">השדה לא יכול להיות ריק</span></font></span></label>			<input type='password' name='_F5_challenge' class='form-control fullnamecredentials_input_password' id='input_1' value='' autocomplete='off' autocapitalize='off' />		</div>
+		<!-- <div class="form-group col-sm-4"></div> -->
+		<div class="form-group col-sm-12 validate">
+			<label class='label' for='input_2' id='label_input_2'><span data-text-swap="Verify Password">אימות הסיסמא החדשה</span><span class="errorText" role="alert"> - <font color=red><span data-text-swap="Cannot be empty">השדה לא יכול להיות ריק</span></font></span></label>			<input type='password' name='_F5_verify_password' class='form-control fullnamecredentials_input_password' id='input_2' value='' autocomplete='off' autocapitalize='off' />		</div>
 <div id=""submit_row>
 <!-- <div class="form-group col-sm-8"></div> -->
 <div class="form-group col-sm-12">
-<a href='/' id="linkBtn" role="button" class="btn big"><span data-text-swap="Click Here">לחץ כאן להמשך</span></a>
+<button type="submit" class="btn confirmationBtn submit scholarships-submit"><span data-text-swap="Logon">כניסה</span></button>
 </div>
+<u style="font-size: 13px;"><font color=red> The domain password change operation failed. Please try again.</font></u>
 </div>
+    <tr>
+        <td colspan=2 id="credentials_table_footer" ></td>
+    </tr>
 
+    <input type=hidden name="vhost" value="standard">
 
 	
                                     </div>
-									
-                                </div>
+                                </div>					
                             </div>
-
 							
-							
-							
-<div id="contactinfo" class="col-sm-5" style="margin-top: 44px;">
-	<h4 class="titleText"><span data-text-swap="Having trouble? <br> Contact support:">נתקלת בבעיה?<br>פנה/י לתמיכה:</span></h4>
-	<ul class="moreInfoList">
-		<li>
-			<a title="צור קשר" class="link" href="https://hd.idc.ac.il/servicePortal/submitIncident">
-											
-				<i alt="צור קשר" class="admission-contact-form-icon icon-icon06"></i>
-				<div><span data-text-swap="Contact us">צור קשר</span></div>
-			</a>
-		</li>
-        <li>
-            <a title="Whatsapp" class="link" href="https://web.whatsapp.com/send?phone=+97299602400" target="_blank">
-            	<i alt="Whatsapp" class="admission-contact-form-icon">
-        			<span>
-        				<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 39 39">
-        				<path fill="#00E676" d="M10.7 32.8l.6.3c2.5 1.5 5.3 2.2 8.1 2.2 8.8 0 16-7.2 16-16 0-4.2-1.7-8.3-4.7-11.3s-7-4.7-11.3-4.7c-8.8 0-16 7.2-15.9 16.1 0 3 .9 5.9 2.4 8.4l.4.6-1.6 5.9 6-1.5z"></path>
-        				<path fill="#FFF" d="M32.4 6.4C29 2.9 24.3 1 19.5 1 9.3 1 1.1 9.3 1.2 19.4c0 3.2.9 6.3 2.4 9.1L1 38l9.7-2.5c2.7 1.5 5.7 2.2 8.7 2.2 10.1 0 18.3-8.3 18.3-18.4 0-4.9-1.9-9.5-5.3-12.9zM19.5 34.6c-2.7 0-5.4-.7-7.7-2.1l-.6-.3-5.8 1.5L6.9 28l-.4-.6c-4.4-7.1-2.3-16.5 4.9-20.9s16.5-2.3 20.9 4.9 2.3 16.5-4.9 20.9c-2.3 1.5-5.1 2.3-7.9 2.3zm8.8-11.1l-1.1-.5s-1.6-.7-2.6-1.2c-.1 0-.2-.1-.3-.1-.3 0-.5.1-.7.2 0 0-.1.1-1.5 1.7-.1.2-.3.3-.5.3h-.1c-.1 0-.3-.1-.4-.2l-.5-.2c-1.1-.5-2.1-1.1-2.9-1.9-.2-.2-.5-.4-.7-.6-.7-.7-1.4-1.5-1.9-2.4l-.1-.2c-.1-.1-.1-.2-.2-.4 0-.2 0-.4.1-.5 0 0 .4-.5.7-.8.2-.2.3-.5.5-.7.2-.3.3-.7.2-1-.1-.5-1.3-3.2-1.6-3.8-.2-.3-.4-.4-.7-.5h-1.1c-.2 0-.4.1-.6.1l-.1.1c-.2.1-.4.3-.6.4-.2.2-.3.4-.5.6-.7.9-1.1 2-1.1 3.1 0 .8.2 1.6.5 2.3l.1.3c.9 1.9 2.1 3.6 3.7 5.1l.4.4c.3.3.6.5.8.8 2.1 1.8 4.5 3.1 7.2 3.8.3.1.7.1 1 .2h1c.5 0 1.1-.2 1.5-.4.3-.2.5-.2.7-.4l.2-.2c.2-.2.4-.3.6-.5s.4-.4.5-.6c.2-.4.3-.9.4-1.4v-.7s-.1-.1-.3-.2z"></path>
-        				</svg>
-        			</span>
-        		</i>
-                <div>09-9602400</div>
-            </a>
-        </li>
-		<li>
-			<a class="link" title="טלפון" href="tel:09-9602400">
-				<i alt="טלפון" class="admission-contact-form-icon icon-icon07"></i>
-				<div>09-9602400</div>
-																												 
-			</a>
-		</li>
-		<li>
-			<div class="link">
-				<i class="admission-contact-form-icon icon-icon08"></i>
-											
-				<div>
-					<span data-text-swap="Opening Hours<br>Sun-Thu: 8:00-18:00 | Fri: 8:00-13:00">
-					שעות פעילות:
-					<br>
-					בימים א' עד ה': 8:00-18:00 | ביום ו': 8:00-13:00 
-					</span>
-				</div>
-			</div>
-		</li>
-	</ul>
-</div>
-	   
-	   
+<h4 id="demo"  class="titleText"></h4>
+	<div id="contactinfo" class="col-sm-5">
+		<div id="studentpswrdPolicy">
+			<h4 class="titleText"><span data-text-swap="Password security best practices">המלצות כלליות לאבטחת סיסמה</span></h4>
+			<ul class="moreInfoListPass">
+				<li>
+					<div class="link">
+						<i class="admission-contact-form-icon icon-icon83"></i>
+						<div>
+							<span data-text-swap="Passwords complexity recommendation:">המלצות למורכבות סיסמה:</span>
+							<br>
+							&#8226; <span data-text-swap="Minimum of eight (8) characters in length">אורך של שמונה (8) תווים מינימום</span>
+							<br>
+							&#8226; <span data-text-swap="Contain at least one (1) character from three (3) of the following categories:">תשתמש בתו אחד (1) לפחות משלוש (3) הקטגוריות הבאות:</span>
+							<br>
+							<span data-text-swap="1. Uppercase letter (A-Z)">1. אות גדולה (A-Z)</span>
+							<br>
+							<span data-text-swap="2. Lowercase letter (a-z)">2. אות קטנה (a-z)</span>
+							<br>
+							<span data-text-swap="3. Digit (0-9)">3. ספרות (0-9)</span>
+							<br>
+							<span data-text-swap="4. Special character ">4. תו מיוחד </span>(~!@#$%^&*()+=_- {}[]\|:;”’?/<>,.)
+							<br>
+							</span>
+						</div>
+					</div>
+				</li>
+				<li>
+					<div class="link">
+						<i class="admission-contact-form-icon icon-icon83"></i>
+						<div>
+							<span data-text-swap="Use passfrases. Longer, more complex and easy to remember:">השתמש בביטוי (passphrase). ארוך יותר, מורכב יותר וקל לזכור:</span>
+							<br>
+							&#8226; <span data-text-swap="Add words to create a phrase (include other languages)">הוסף מילים ליצירת ביטוי (כלול שפות אחרות)</span>
+							<br>
+							&#8226; <span data-text-swap="Add capitals for emphasis">הוסף אות גדולה להדגשה</span>
+							<br>
+							&#8226; <span data-text-swap="Add special characters for creative flair">הוסף תווים מיוחדים לכישרון יצירתי</span>
+							<br>
+							&#8226; <span data-text-swap="Add spaces to add further complexity">הוסף רווחים למורכבות נוספת</span>
+							<br>
+							&#8226; <span data-text-swap="Add block capitals to go one step further">הדגש מילה באתיות גדולות כדי ללכת צעד אחד קדימה</span>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+		
+		<div id="notstudentpswrdPolicy">
+			<h4 class="titleText"><span data-text-swap="Password Policy">מדיניות ססמאות</span></h4>
+			<ul class="moreInfoListPass">
+				<li>
+					<div class="link">
+						<i class="admission-contact-form-icon icon-icon83"></i>
+						<div>
+							<span data-text-swap="Passwords must:">הסיסמה חייבת להיות:</span>
+							<br>
+							&#8226; <span data-text-swap="Be a minimum of eight (8) characters in length">באורך של שמונה (8) תווים מינימום</span>
+							<br>
+							&#8226; <span data-text-swap="Contain at least one (1) character from three (3) of the following categories:">באנגלית ומכילה תו אחד (1) לפחות משלוש (3) הקטגוריות הבאות:</span>
+							<br>
+							<span data-text-swap="1. Uppercase letter (A-Z)">1. אות גדולה (A-Z)</span>
+							<br>
+							<span data-text-swap="2. Lowercase letter (a-z)">2. אות קטנה (a-z)</span>
+							<br>
+							<span data-text-swap="3. Digit (0-9)">3. ספרות (0-9)</span>
+							<br>
+							<span data-text-swap="4. Special character ">4. תו מיוחד </span>(~!@#$%^&*()+=_- {}[]\|:;”’?/<>,.)
+							<br>
+							</span>
+						</div>
+					</div>
+				</li>
+				<li>
+					<div class="link">
+						<i class="admission-contact-form-icon icon-icon83red"></i>
+						<div>
+							<span data-text-swap="Passwords must not:">הסיסמה לא תקינה אם:</span>
+							<br>
+							&#8226; <span data-text-swap="Contain first or last name.">תכלול שם פרטי או שם משפחה.</span>
+							<br>
+							&#8226; <span data-text-swap="Repeat your last 5 passwords.">הייתה בשימוש 5 פעמים  האחרונות.</span>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
                         </div>
+					</form>
+					
+    <script language="javascript"><!--//
+        softTokenInput = getSoftTokenInput();
+        logonFormCompatible = getFormCompatibility();
+        // Pass method names to the client for auto-submit triggered by the client
+        externalWebHost.setWeblogonCallbacks(
+             "weblogonAutoSubmit();",
+             "challengeAutoSubmit();"
+        );
+
+        // Check if the softTokenInput exists or in case of RSA challenge mode
+        if((softTokenFieldId != "") && (null != softTokenInput || challengeMode ) && edgeClientSoftTokenSupport()){
+            externalWebHost.setWebLogonSoftTokenPrompt(getSoftTokenPrompt());
+            externalWebHost.setWebLogonSoftTokenState(softTokenState);
+        }
+
+        // Check if the client can ask user for soft-token PIN
+        if((softTokenFieldId != "") && (softTokenInput != null)
+               && edgeClientSoftTokenSupport()
+               && externalWebHost.canRequestWeblogonSoftTokenPIN()){
+            softTokenInput.readOnly = true;
+            softTokenPINAutoPopulate = true;
+            // No need to request input of RSA PIN, as the client can show PIN input UI if needed,
+            // make the field read-only
+            // set bogus value to display
+            softTokenInput.value = "********";
+        }
+
+        checkExternalAddCheckbox();
+        window.sessionTimeout = new APMSessionTimeout(sessionTimedOut);
+
+        function dontChangePasswordClick(){
+            var checkbox = document.getElementById("dont_change_password_checkbox");
+            var password = document.getElementById("input_1");
+            var verify = document.getElementById("input_2");
+            if( checkbox.checked ){
+                password.value = "";
+                password.disabled = true;
+                verify.value = "";
+                verify.disabled = true;
+            }else{
+                password.disabled = false;
+                verify.disabled = false;
+            }
+        }
+
+        var finitvalues=[ '','','','','' ];
+        var sessionLogonCustomizations = [ "", "", "", "", "" ];
+        var sessionLogonCustomizationPairs = [ [], [], [], [], [] ];
+        for( var i=0; i<sessionLogonCustomizations.length; i++ ){
+            var pairs = ( sessionLogonCustomizations[i].indexOf(";") == -1 ? [ sessionLogonCustomizations[i] ] : sessionLogonCustomizations[i].trim().split(";") );
+            for( var j=0; j<pairs.length; j++ ){
+                if( pairs[j].indexOf("=>") != -1 ){
+                    var pair = pairs[j].split("=>");
+                    sessionLogonCustomizationPairs[i][pair[0]] = pair[1];
+                }
+            }
+        }
+
+        var sessionLogonValuesets = [ "", "", "", "", "" ];
+        for( var i=0; i<sessionLogonValuesets.length; i++ ){
+            var inpx = document.getElementById("input_" + (i+1) );
+            if( inpx !== null && inpx.tagName.toUpperCase() == "SELECT" ){
+                if( sessionLogonValuesets[i].trim() != "" ){
+                    inpx.options.length = 0;
+                    var options = sessionLogonValuesets[i].trim().split(";");
+                    for( var j=0; j<options.length; j++ ){
+                        inpx.options.add( new Option( options[j], options[j] ) );
+                    }
+                }
+                if( sessionLogonCustomizations[i].trim() != "" ){
+                    for( var j=0; j<inpx.options.length; j++ ){
+                        if( typeof sessionLogonCustomizationPairs[i][ inpx.options[j].value ] != "undefined" ){
+                            inpx.options[j].text = sessionLogonCustomizationPairs[i][ inpx.options[j].value ];
+                        }
+                    }
+                }
+                // set value
+                for( var j=0; j<inpx.options.length; j++ ){
+                    if( inpx.options[j].value == finitvalues[i] ){
+                        inpx.value = finitvalues[i];
+                        break;
+                    }
+                }
+            }else if( document.getElementById("input_" + (i+1) + "_0" ) ){ // RADIO
+                var initValue = finitvalues[i];
+                var radio = null;
+                var name = document.getElementById("input_" + (i+1) + "_0" ).name;
+                if( sessionLogonValuesets[i].trim() != "" ){
+                    var parent = document.getElementById( "label_input_" + (i+1) ).parentNode;
+                    while( parent.childNodes.length > 1 ){
+                        parent.removeChild( parent.lastChild );
+                    }
+                    var options = sessionLogonValuesets[i].trim().split(";");
+                    for( var j=0; j<options.length; j++ ){
+                        var div = parent.appendChild( document.createElement( "div" ) );
+                        var elmdef = document.all && navigator.userAgent.match(/MSIE (\d+)/)[1] < 9 ? "<input type='radio'>" : "input";
+                        var input = div.appendChild( document.createElement( elmdef ) );
+                        if( input.type != 'radio' ){ input.type = 'radio'; }
+                        input.id = "input_" + (i+1) + "_" + j;
+                        input.name = "name";
+                        input.value = options[j];
+                        var label = div.appendChild( document.createElement( "label" ) );
+                        label.htmlFor = input.id;
+                        label.id = "label_" + input.id;
+                        label.className = "radio-label";
+                        label.style.display = "inline";
+                        label.innerHTML = options[j];
+                    }
+                }
+                if( sessionLogonCustomizations[i].trim() != "" ){
+                    var j = 0;
+                    while( ( radio = document.getElementById("input_" + (i+1) + "_" + j++ ) ) !== null ){ // what number
+                        if( typeof sessionLogonCustomizationPairs[i][ radio.value ] != "undefined" ){
+                            document.getElementById("label_input_" + (i+1) + "_" + (j-1) ).innerHTML = sessionLogonCustomizationPairs[i][ radio.value ];
+                        }
+                    }
+                }
+                var anyChecked = false, j = 0;
+                while( initValue != "" && ( radio = document.getElementById("input_" + (i+1) + "_" + j++ ) ) !== null ){
+                    radio.checked = ( radio.value == initValue );
+                    if( radio.checked ){ anyChecked = true; }
+                }
+                if( !anyChecked && ( radio = document.getElementById("input_" + (i+1) + "_" + 0 ) ) !== null ){
+                    radio.checked = true;
+                }
+            }else if( inpx !== null && inpx.tagName.toUpperCase() == "INPUT" && inpx.type.toUpperCase() == "CHECKBOX" ){
+                if( inpx.disabled && finitvalues[i] != "" ){
+                    inpx.checked = true;
+                }else if( !inpx.disabled && inpx.value == "" ){
+                    inpx.value = "1";
+                }
+            }
+        }
+    --></script>
+	
+	
 				</div>
 			</div>
 		</section>
@@ -462,14 +1203,38 @@ function onSelectedChange(strlng,f)
 		</main>
 		<footer role="contentinfo" id="footerArea">
 			<div class="container-fluid col10">                 
-        		<div class="allRightsReserved"><span data-text-swap="© All rights reserved to Reichman University | 2021">© כל הזכויות שמורות לאוניברסיטת רייכמן | 2021</span></div>
-            </div>
+				<div class="allRightsReserved"><span data-text-swap="© All rights reserved to Reichman University | 2021">© כל הזכויות שמורות לאוניברסיטת רייכמן | 2021</span></div>
+			</div>
 		</footer>               
 		</div>
 	</div>
 	
-															
-	   
-<DIV ID="logoutActivexContainer" class="inspectionHostDIVSmall"></DIV>
+<script type="text/javascript">
+    function F5_include_JS(jsFile)
+    {
+        document.write('<script type="text/javascript" src="'
+                         + jsFile + '"></scr' + 'ipt>'); // <-- IE7 workaround
+    }
+
+    if ("" == "1") {
+        var f5VirtualKeyboardMove = ( "" == 1 ? "1" : "0" );
+        var f5VirtualKeyboardForceBlur = ( "" == 1 ? "0" : "1" );
+        function VirtualKeyboard_CustomizedMessageTextGet()
+{
+  return 'Virtual Keyboard';
+}
+
+function VirtualKeyboard_CustomizedHideTextGet()
+{
+  return 'Hide Keyboard';
+}
+
+        var f5VirtualKeyboardMessageText =  VirtualKeyboard_CustomizedMessageTextGet();
+        var f5VirtualKeyboardHideText =  VirtualKeyboard_CustomizedHideTextGet();
+        F5_include_JS('/public/include/js/vk/f5_vk.js');
+    }
+</script><div id="MessageDIV" class="inspectionHostDIVSmall"></div>
+<div id="formHeaderSoftToken" style="overflow: hidden; visibility: hidden; height: 0; width: 0;"><font color=red> The domain password change operation failed. Please try again.</font></div>
+
 </body>
 </html>
